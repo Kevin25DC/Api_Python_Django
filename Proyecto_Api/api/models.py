@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 
 class autor(models.Model):
-    nombre =models.CharField(max_leng =100,blank=False)
+    nombre =models.CharField(max_length =100,blank=False)
     apellido =models.CharField(max_length=100, blank=False)
     ciudad= models.CharField (max_length=100,blank=False)
     fecha_creacion=models.CharField(max_length=100)
