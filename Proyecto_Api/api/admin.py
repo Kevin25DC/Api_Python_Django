@@ -1,12 +1,10 @@
 from django.contrib import admin
-from .models import autores
-from .models import revista
-from .models import articulo
-from .models import autores_articulos
+from .models import autor
+from .models import libro
+from .models import auto_libr
 
 # Register your models here.
 
-admin.site.register(autores)
-admin.site.register(revista)
-admin.site.register(articulo)
-admin.site.register(autores_articulos)
+admin.site.register(autor)
+admin.site.register(libro)
+admin.site.register(auto_libr)
