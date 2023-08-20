@@ -14,14 +14,25 @@ class autorview(View): # esta clase se convertira en una vista, que sea capas de
         def dispatch(self, request, *args: Any, **kwargs):  #este metodo es para hacer una peticion, el cual coloque para que no hubiera problema al momento de insertar un datos en la bse de datos desde un Json
             return super().dispatch(request, *args, **kwargs)
         
-        def get(self, request):
-            autores = autor.objects.all()
-            autores_serializados = list(autores.values())  # Convertir el QuerySet en una lista de diccionarios
-            if autores_serializados:
-                 datos = {'Mensaje': "Exitoso", 'autores': autores_serializados}
+        def get(self, request, id=0):
+            if id > 0:
+                autores_lista = list(autor.objects.filter(id=id).values())
+                if len(autores_lista) > 0:
+                    autor_info = autores_lista[0]
+                    datos = {'Mensaje': "Exitoso", 'autores': autor_info}
+                else:
+                    datos = {'Mensaje': "autores no encontrados"}
+                return JsonResponse(datos)
             else:
-                datos = {'Mensaje': "autores no encontrados"}
+                autores_lista = list(autor.objects.values())
+                if len(autores_lista) > 0:
+                    datos = {'Mensaje': "Exitoso", 'autores': autores_lista}
+                else:
+                    datos = {'Mensaje': "autores no encontrados"}
             return JsonResponse(datos)
+
+
+
         
         def post(self, request):
             # print(request.body)
@@ -31,6 +42,19 @@ class autorview(View): # esta clase se convertira en una vista, que sea capas de
             datos = {'Mensaje':"Exitoso"}
             return JsonResponse(datos)
         
+        def put(self,request):
+            jd=json.loads(request.body)
+            autor = list(autor.objects.filter(id=id).values())
+            if len(autor) > 0:
+                autor = autor.objects.get(id=id)
+                autor.nombre =jd['nombre_autor']
+                autor.apellido =jd['apellido']
+                autor.ciduad =jd['ciduad']
+                autor.fecha =jd['fecha_de_creacion']
+                autor.save()
+            else:
+                datos ={'Mnesaje':"libro no encontrado"}
+
 class libroview(View): # esta clase se convertira en una vista, que sea capas de procesar las respuesta
     
     @method_decorator(csrf_exempt)
