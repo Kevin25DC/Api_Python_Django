@@ -6,6 +6,7 @@ from django.views import View # esta clase se imorrta para las vistas
 from .models import autor,libro,auto_libr
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+import json 
 #metodos 
 class autorview(View): # esta clase se convertira en una vista, que sea capas de procesar las respuesta
         
@@ -23,26 +24,19 @@ class autorview(View): # esta clase se convertira en una vista, que sea capas de
             return JsonResponse(datos)
         
         def post(self, request):
-            try:
-        # Aquí realizas la inserción de datos en la base de datos
-        # Por ejemplo, si 'nombre' y 'apellido' son campos de tu modelo 'autor':
-                nombre = request.POST.get('nombre')
-                apellido = request.POST.get('apellido')
-                ciudad = request.POST.get('ciudad')
-                fecha_creacion = request.POST.get('fecha_creacion')
-                nuevo_autor = autor(nombre=nombre, apellido=apellido, ciudad=ciudad,fecha_creacion=fecha_creacion)
-                nuevo_autor.save()
-
-                datos = {'Mensaje': "Datos insertados exitosamente"}
-            except Exception as e:
-                datos = {'Mensaje': "Error al insertar datos"}
+            # print(request.body)
+            jd=json.loads(request.body)
+            #print(jd)
+            autor.objects.create(nombre=jd['nombre'], apellido =jd ['apellido'], ciudad =jd['ciudad'], fecha_creacion =jd ['fecha_creacion'])
+            datos = {'Mensaje':"Exitoso"}
             return JsonResponse(datos)
-
-
-   
-
+        
 class libroview(View): # esta clase se convertira en una vista, que sea capas de procesar las respuesta
     
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args: Any, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
     def get(self,request): 
         libros = libro.objects.all()
         libro_serializados = list(libros.values()) 
@@ -51,17 +45,51 @@ class libroview(View): # esta clase se convertira en una vista, que sea capas de
         else:
             datos ={'Mensaje':"libro encontrado"}
         return JsonResponse(datos)
-
     
-
-class auto_librview(View): # esta clase se convertira en una vista, que sea capas de procesar las respuesta
-
-    
-    def get(self,request): 
-        autos_librview = auto_libr.objects.all()
-        autos_libr_serializados =list(autos_librview.values())
-        if autos_libr_serializados:
-            datos ={'Mensaje':"Exitoso",'auto_libr':autos_libr_serializados}
-        else:
-            datos ={'Mensaje':"auto_libr encontrado"}
+    def post(self,request):
+        jd =json.loads(request.body)
+        libro.objects.create(nombre_libro =jd['nombre_libro'], tema =jd['tema'],fecha =jd ['tema'])
+        datos ={'Mensaje':"libro insertado exitosamente"}
         return JsonResponse(datos)
+    
+
+class auto_librview(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args: Any, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request): 
+        autos_librview = auto_libr.objects.all()
+        autos_libr_serializados = list(autos_librview.values())
+        if autos_libr_serializados:
+            datos = {'Mensaje': "Exitoso", 'auto_libr': autos_libr_serializados}
+        else:
+            datos = {'Mensaje': "auto_libr no encontrado"}
+        return JsonResponse(datos)
+    
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            autor_id = data['autor_id']  # Supongamos que el JSON incluye el ID del autor
+            libro_id = data['libro_id']  # Supongamos que el JSON incluye el ID del libro
+           
+           
+            autor_relacionado = autor.objects.get(id2_autor=autor_id)  # Obtén el autor relacionado
+            libro_relacionado = libro.objects.get(id1_dlibro=libro_id)  # Obtén el libro relacionado
+            
+            nueva_relacion = auto_libr(
+                autor=autor_relacionado,
+                libro=libro_relacionado,
+                fecha=data['fecha_auto_libr']
+            )
+            nueva_relacion.save()
+            print(nueva_relacion)
+             
+
+            response_data = {'Mensaje': "auto_libr insertado exitosamente"}
+        except Exception as e:
+            print(e)
+            response_data = {'Mensaje': "Error al insertar auto_libr"}
+        
+        return JsonResponse(response_data)
